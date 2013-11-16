@@ -1,0 +1,216 @@
+options {
+	static = false;
+}
+
+PARSER_BEGIN(GologParser)
+package incr.golog.syntax.parser;
+
+import java.io.*;
+import java.util.*;
+
+import incr.*;
+import incr.formula.*;
+import incr.golog.*;
+import incr.golog.syntax.*;
+import incr.term.*;
+
+@SuppressWarnings("unused")
+public class GologParser {
+	public Environment environment = new Environment();
+	public AbstractProgram program = null;
+
+	public GologParser(String s) {
+		this(new StringReader(s));	}
+}
+PARSER_END(GologParser)
+
+SKIP: {" "|"\n"|"\t"|"\r"|<"--"(~["\n","\r"])*("\n"|"\r")>}
+TOKEN: {
+	<PAR_OP:"("> | <PAR_CL:")">
+|	<AND:"&&"> | <OR:"||"> | <NOT:"!">
+| 	<IF:"if"> | <THEN:"then"> | <ELSE:"else"> | <ENDIF:"endIf">
+|	<WHILE:"while"> | <DO:"do"> | <ENDWHILE:"endWhile">
+|	<PROC:"proc"> | <COMMA:","> | <ENDPROC:"endProc">
+|	<PI:"pi"> | <DOT:".">
+|	<QUESTIONMARK:"?"> | <COLON:":"> | <PIPE:"|"> | <STAR:"*">
+|	<ACTION:"action"> | <PRECONDITIONS:"preconditions"> | <ADD:"add"> | <DEL:"del">
+|	<ID:["a"-"z"](["a"-"z","A"-"Z","0"-"9","_"])*>
+|	<NUMINT:("+"|"-")?("0"|["1"-"9"](["0"-"9"])*)>
+|	<NUMFLOAT:(<NUMINT>)?"."(["0"-"9"])+>
+|	<VAR:["A"-"Z"](["a"-"z","A"-"Z","0"-"9","_"])*>
+}
+
+void parse():
+{
+	Proc proc;
+	Action action;
+}
+{
+	( proc=proc() {environment.addProc(proc);}
+	| action=action() {environment.addAction(action);}	)*
+	[ program=program() {} ]
+}
+
+Action action():
+{
+	Functional head;
+	Functional precond = Term.TRUE;
+	List<Term> add = Collections.emptyList();
+	List<Term> del = Collections.emptyList();}{
+	<ACTION> head=functionalOrAtom()
+	[ <PRECONDITIONS> precond=boolExpr() ]
+	[ <ADD> add=termList() ]
+	[ <DEL> del=termList() ]
+	{return new Action(head, precond, add, del);}}
+
+Proc proc():
+{
+	Functional head;
+	AbstractProgram body;
+}
+{
+	<PROC> head=functionalOrAtom()
+	body=program()
+	<ENDPROC>
+	{return new Proc(head, body);}
+}
+
+AbstractProgram program():
+{
+	AbstractProgram p, p2;
+}{
+	(
+	  p=atomicBlock()
+	| p=ifBlock()
+	| p=piBlock()
+	| p=testBlock()
+	| p=whileBlock()
+	| p=grouping()
+	)
+	( <PIPE> p2=program() {p = new NDet(p, p2);}
+	| <COLON> p2=program() {p = new Sequence(p, p2);}
+	| <STAR> {p = new Star(p);} )*
+	{return p;}}
+
+AbstractProgram grouping():
+{
+	AbstractProgram p;}{
+	<PAR_OP> p=program() <PAR_CL> {return p;}}
+
+Atomic atomicBlock():
+{
+	Functional f;}
+{
+	f=functionalOrAtom() {return new Atomic(f);}}
+
+If ifBlock():
+{
+	Functional cond;
+	AbstractProgram thenBlock, elseBlock;}{
+	<IF> cond=boolExpr()
+	<THEN>
+	thenBlock=program()
+	<ELSE>
+	elseBlock=program()
+	<ENDIF>
+	{return new If(cond, thenBlock, elseBlock);}}
+
+Pi piBlock():
+{
+	Variable var;
+	AbstractProgram body;}{
+	<PI> var=var() <DOT> body=program()
+	{return new Pi(var, body);}}
+
+Test testBlock():
+{
+	Functional cond;}{
+	<QUESTIONMARK> cond=boolExpr()
+	{return new Test(cond);}}
+
+While whileBlock():
+{
+	Functional cond;
+	AbstractProgram body;}{
+	<WHILE> cond=boolExpr() <DO> body=program() <ENDWHILE>
+	{return new While(cond, body);}}
+
+Functional functionalOrAtom():
+{
+	Functional f;}{
+	( LOOKAHEAD(2) f=functional() | f=atom() ) {return f;}}
+
+Functional functional():
+{
+	Token f;
+	List<Term> args = new ArrayList<Term>();
+	Term arg0;
+}
+{
+	f=<ID> <PAR_OP> [ args=termList() ] <PAR_CL>
+	{return new Functional(f.image, args);}
+}
+
+Functional atom():
+{
+	Token a;}{
+	a=<ID> {return new Functional(a.image);}}
+
+Functional num():
+{
+	Token f;}
+{
+	( f=<NUMINT> | f=<NUMFLOAT> ) {return new Functional(f.image);}}
+
+Variable var():
+{
+	Token f;}{
+	f=<VAR> {return new Variable(f.image);}}
+
+Term functionalOrNumOrVar():
+{
+	Term t;
+}
+{
+	( LOOKAHEAD(2) t=functional() | t=atom() | t=num() | t=var() )	{return t;}
+}
+
+List<Term> termList():
+{
+	List<Term> args = new ArrayList<Term>();
+	Term t;
+	Token n;
+}
+{
+	t=functionalOrNumOrVar() {args.add(t);}
+	( <COMMA> t=functionalOrNumOrVar() {args.add(t);} )*
+	{return args;}
+}
+
+Functional boolExpr():
+{
+	Functional t;}{
+	t=boolExprDisj() {return t;}}
+
+Functional boolExprDisj():
+{	Functional t, t2;
+}{
+	t=boolExprConj()
+	( <OR> t2=boolExprConj() {t=new Or(t, t2);} )*
+	{return t;}
+}
+
+Functional boolExprConj():
+{
+	Functional t, t2;}{
+	t=boolExprAtom()
+	( <AND> t2=boolExprAtom() {t=new And(t, t2);} )*
+	{return t;}}
+
+Functional boolExprAtom():
+{
+	Functional t;}{
+	( t=functional() {return t;}
+	| <NOT> t=functional() {return new Not(t);}
+	| <PAR_OP> t=boolExpr() <PAR_CL> {return t;} )
+}

@@ -1,0 +1,21 @@
+action init
+	add on(b, table), clear(b), clear(c), on(c, d), on(d, a), on(a, table), clear(table)
+
+action goal
+	preconditions clear(a) && on(a, b) && on(b, c) && on(c, d) && on(d, table)
+
+action move(Obj, From, To)
+	preconditions on(Obj, From) && clear(Obj) && clear(To)
+	add on(Obj, To), clear(From)
+	del on(Obj, From), clear(To), clear(table)
+
+-- this method takes too much time
+--	(pi Obj . pi From . pi To . move(Obj, From, To))* : goal
+
+-- this solution puts all blocks on table and builds
+-- the tower deterministically
+	(pi A . pi B . move(A, B, table))*
+:	move(c, table, d)
+:	move(b, table, c)
+:	move(a, table, b)
+:	goal

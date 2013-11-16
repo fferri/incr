@@ -4,48 +4,77 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import incr.formula.AbstractTerm;
-import incr.formula.Predicate;
-import incr.formula.Substitution;
+import incr.formula.BinaryOp;
+import incr.formula.UnaryOp;
+import incr.subst.Substitutions;
+import incr.term.Functional;
+import incr.term.Term;
+import incr.term.Variable;
 
 public class Action {
-	private Predicate head;
-	private AbstractTerm preconditions;
-	private List<Predicate> addList;
-	private List<Predicate> delList;
+	private Functional head;
+	private Term preconditions;
+	private List<Term> addList;
+	private List<Term> delList;
+
+	public Action(Functional head) {
+		this(head, Term.TRUE);
+	}
 	
-	public Action(Predicate head, AbstractTerm preconditions, List<Predicate> addList, List<Predicate> delList) {
+	public Action(Functional head, Term preconditions) {
+		this(head, preconditions, NO_TERMS);
+	}
+	
+	public Action(Functional head, Term preconditions, List<? extends Term> addList) {
+		this(head, preconditions, addList, NO_TERMS);
+	}
+	
+	public Action(Functional head, Term preconditions, List<? extends Term> addList, List<? extends Term> delList) {
 		if(head == null || preconditions == null || addList == null || delList == null)
 			throw new NullPointerException();
 		this.head = head;
 		this.preconditions = preconditions;
 		this.addList = new ArrayList<>(addList.size());
-		for(Predicate p : addList) {
-			if(p == null)
-				throw new NullPointerException();
+		for(Term p : addList) {
+			validateAddDelTerm(p);
 			this.addList.add(p);
 		}
 		this.delList = new ArrayList<>(delList.size());
-		for(Predicate p : delList) {
-			if(p == null)
-				throw new NullPointerException();
+		for(Term p : delList) {
+			validateAddDelTerm(p);
 			this.delList.add(p);
 		}
 	}
 	
-	public Predicate getHead() {
+	protected void validateAddDelTerm(Term t) {
+		if(t == null)
+			throw new NullPointerException();
+		if(t instanceof Variable)
+			return;
+		if(t instanceof Functional) {
+			Functional f = (Functional)t;
+			if(f.getOrder() > 1)
+				throw new IllegalArgumentException("only atoms or first order terms allowed in add/del list");
+			if(f instanceof UnaryOp || f instanceof BinaryOp)
+				throw new IllegalArgumentException("logic operators not allowed in add/del list");
+		} else {
+			throw new IllegalArgumentException("unsupported term in add/del list: " + t.getClass().getSimpleName());
+		}
+	}
+	
+	public Functional getHead() {
 		return head;
 	}
 	
-	public AbstractTerm getPreconditions() {
+	public Term getPreconditions() {
 		return preconditions;
 	}
 	
-	public List<Predicate> getAddList() {
+	public List<Term> getAddList() {
 		return Collections.unmodifiableList(addList);
 	}
 	
-	public List<Predicate> getDelList() {
+	public List<Term> getDelList() {
 		return Collections.unmodifiableList(delList);
 	}
 	
@@ -78,18 +107,23 @@ public class Action {
 	}
 	
 	public boolean isGround() {
-		return head.isGround() &&
-				preconditions.isGround() &&
-				AbstractTerm.isGround(addList) &&
-				AbstractTerm.isGround(delList);
+		if(!head.isGround()) return false;
+		if(!preconditions.isGround()) return false;
+		for(Term t : addList) if(!t.isGround()) return false;
+		for(Term t : delList) if(!t.isGround()) return false;
+		return true;
 	}
 	
-	public Action ground(Substitution sub) {
+	public Action ground(Substitutions sub) {
+		List<Term> newAddList = new ArrayList<>(addList.size());
+		for(Term add : addList) newAddList.add(add.substitute(sub));
+		List<Term> newDelList = new ArrayList<>(delList.size());
+		for(Term add : delList) newDelList.add(add.substitute(sub));
 		return new Action(
-				sub.apply(head),
-				sub.apply(preconditions),
-				sub.apply(addList),
-				sub.apply(delList)
+				(Functional)head.substitute(sub),
+				preconditions.substitute(sub),
+				newAddList,
+				newDelList
 		);
 	}
 	
@@ -105,4 +139,6 @@ public class Action {
 		s1.removeAll(delList);
 		return s1;
 	}
+	
+	public static final List<Term> NO_TERMS = Collections.emptyList();
 }

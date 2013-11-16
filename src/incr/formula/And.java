@@ -1,80 +1,33 @@
 package incr.formula;
 
-import java.util.Arrays;
-import java.util.List;
-
 import incr.State;
+import incr.subst.Substitution;
+import incr.term.Term;
 
-public class And extends AbstractTerm {
-	private AbstractTerm t1;
-	private AbstractTerm t2;
-	
-	public And(AbstractTerm t1, AbstractTerm t2) {
-		if(t1 == null || t2 == null)
-			throw new NullPointerException();
-		this.t1 = t1;
-		this.t2 = t2;
+public class And extends BinaryOp {
+	public And(Term operand1, Term operand2) {
+		super("and", operand1, operand2);
 	}
 	
-	public AbstractTerm getT1() {
-		return t1;
+	public And(Term...terms) {
+		this(0, terms);
 	}
 	
-	public AbstractTerm getT2() {
-		return t2;
-	}
-	
-	@Override
-	public boolean isGround() {
-		return t1.isGround() && t2.isGround();
-	}
-	
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		for(AbstractTerm term : new AbstractTerm[]{t1, t2}) {
-			sb.append(sb.length() == 0 ? "" : " & ");
-			if(term instanceof Or) sb.append("(");
-			sb.append(term);
-			if(term instanceof Or) sb.append(")");
-		}
-		return sb.toString();
-	}
-	
-	@Override
-	public boolean equals(Object obj) {
-		return obj != null && obj instanceof And && equals((And)obj);
-	}
-	
-	public boolean equals(And n) {
-		return n != null && n.getT1().equals(getT1()) && n.getT2().equals(getT2());
-	}
-	
-	@Override
-	public int hashCode() {
-		return 131 + 19 * t1.hashCode() + 23 * t2.hashCode();
+	protected And(int skip, Term[] terms) {
+		this(terms[skip],
+				(terms.length - skip) > 2
+					? new And(skip + 1, terms)
+					: terms[skip + 1]);
 	}
 	
 	@Override
 	public boolean truthValue(State s) {
-		return t1.truthValue(s) && t2.truthValue(s);
+		return getOperand1().truthValue(s) && getOperand2().truthValue(s);
 	}
 	
-	public static And AND(AbstractTerm...ts) {
-		return AND(Arrays.asList(ts));
-	}
-	
-	public static And AND(List<AbstractTerm> l) {
-		return AND(l, 0);
-	}
-	
-	private static And AND(List<AbstractTerm> l, int start) {
-		int r = l.size() - start;
-		if(r < 2)
-			throw new IllegalArgumentException();
-		if(r == 2)
-			return new And(l.get(start), l.get(start + 1));
-		else
-			return new And(l.get(start), AND(l, start + 1));
+	@Override
+	public Term substitute(Substitution s) {
+		Term op1 = getOperand1().substitute(s), op2 = getOperand2().substitute(s);
+		return op1 == getOperand1() && op2 == getOperand2() ? this : new And(op1, op2);
 	}
 }

@@ -1,6 +1,7 @@
 package incr;
 
-import incr.formula.Predicate;
+import incr.term.Functional;
+import incr.term.Term;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,27 +12,31 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-public class State implements Iterable<Predicate> {
-	private Set<Predicate> predicates;
-	private List<Predicate> actionHistory;
+public class State implements Iterable<Term> {
+	private Set<Term> predicates;
+	private List<Functional> actionHistory;
 	
 	public State() {
 		predicates = new HashSet<>();
 		actionHistory = new ArrayList<>();
 	}
 	
-	public State(Predicate...preds) {
-		this(Arrays.asList(preds), new ArrayList<Predicate>());
+	public State(Term...terms) {
+		this(Arrays.asList(terms), new ArrayList<Functional>());
 	}
 	
-	public State(Collection<Predicate> preds, List<Predicate> actionSeq) {
+	public State(Collection<Term> terms) {
+		this(terms, new ArrayList<Functional>());
+	}
+	
+	public State(Collection<Term> terms, List<Functional> actionSeq) {
 		this();
-		if(preds == null)
+		if(terms == null)
 			throw new NullPointerException();
-		for(Predicate p : preds) {
-			if(p == null)
+		for(Term t : terms) {
+			if(t == null)
 				throw new NullPointerException();
-			predicates.add(p);
+			predicates.add(t);
 		}
 		if(actionSeq != null)
 			actionHistory.addAll(actionSeq);
@@ -42,29 +47,36 @@ public class State implements Iterable<Predicate> {
 	}
 
 	@Override
-	public Iterator<Predicate> iterator() {
+	public Iterator<Term> iterator() {
 		return predicates.iterator();
 	}
 	
-	public boolean contains(Predicate p) {
+	public boolean contains(Term p) {
 		return predicates.contains(p);
 	}
+
+	public boolean containsAll(Collection<? extends Term> ps) {
+		for(Term p : ps)
+			if(!contains(p))
+				return false;
+		return true;
+	}
 	
-	public boolean add(Predicate p) {
+	public boolean add(Term p) {
 		return predicates.add(p);
 	}
 	
-	public boolean addAll(Collection<Predicate> ps) {
+	public boolean addAll(Collection<? extends Term> ps) {
 		return predicates.addAll(ps);
 	}
 	
-	public boolean remove(Predicate p) {
+	public boolean remove(Term p) {
 		return predicates.remove(p);
 	}
 	
-	public boolean removeAll(Collection<Predicate> ps) {
+	public boolean removeAll(Collection<? extends Term> ps) {
 		boolean ret = false;
-		for(Predicate p : ps)
+		for(Term p : ps)
 			ret = ret || remove(p);
 		return ret;
 	}
@@ -77,11 +89,11 @@ public class State implements Iterable<Predicate> {
 		return predicates.isEmpty();
 	}
 	
-	public void addActionToHistory(Predicate action) {
+	public void addActionToHistory(Functional action) {
 		actionHistory.add(action);
 	}
 	
-	public List<Predicate> getActionHistory() {
+	public List<Functional> getActionHistory() {
 		return Collections.unmodifiableList(actionHistory);
 	}
 	
