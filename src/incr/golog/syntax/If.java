@@ -1,6 +1,11 @@
 package incr.golog.syntax;
 
+import java.util.Arrays;
+import java.util.List;
+
+import incr.State;
 import incr.golog.AbstractEntity;
+import incr.golog.ProgramState;
 import incr.subst.Substitutions;
 import incr.term.Term;
 
@@ -66,5 +71,17 @@ public class If extends AbstractProgram {
 	public int hashCode() {
 		return getClass().hashCode() + getCondition().hashCode()
 				+ getThenBranch().hashCode() + getElseBranch().hashCode();
+	}
+	
+	@Override
+	public List<ProgramState> trans(ProgramState s) {
+		State state = s.getState();
+		boolean check = getCondition().truthValue(state);
+		return Arrays.asList(new ProgramState(s, check ? getThenBranch() : getElseBranch(), state));
+	}
+	
+	@Override
+	public boolean isFinal(ProgramState s) {
+		return false;
 	}
 }

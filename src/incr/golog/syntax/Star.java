@@ -1,6 +1,10 @@
 package incr.golog.syntax;
 
+import java.util.Arrays;
+import java.util.List;
+
 import incr.golog.AbstractEntity;
+import incr.golog.ProgramState;
 import incr.subst.Substitutions;
 
 public class Star extends AbstractProgram {
@@ -45,5 +49,19 @@ public class Star extends AbstractProgram {
 	@Override
 	public int hashCode() {
 		return getClass().hashCode() + getP1().hashCode();
+	}
+	
+	@Override
+	public List<ProgramState> trans(ProgramState s) {
+		return Arrays.asList(
+			new ProgramState(s, getP1(), s.getState()),
+			new ProgramState(s, new Sequence(getP1(), this), s.getState())
+		);
+	}
+
+	
+	@Override
+	public boolean isFinal(ProgramState s) {
+		return false;
 	}
 }

@@ -86,7 +86,7 @@ public class INCR_NoParser {
 		// executes the program and print first 10 solutions
 		ProgramState ps0 = new ProgramState(env, program, state);
 		ProgramState ps = ps0;
-		ProgramState.SolutionIterator i = ps0.solutionIterator(env);
+		ProgramState.SolutionIterator i = ps0.solutionIterator();
 		int n = 0;
 		while(i.hasNext()) {
 			ps = i.next();

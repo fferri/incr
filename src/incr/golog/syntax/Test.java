@@ -1,6 +1,12 @@
 package incr.golog.syntax;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import incr.State;
 import incr.golog.AbstractEntity;
+import incr.golog.ProgramState;
 import incr.subst.Substitutions;
 import incr.term.Term;
 
@@ -42,5 +48,19 @@ public class Test extends AbstractProgram {
 	@Override
 	public int hashCode() {
 		return getClass().hashCode() + getFormula().hashCode();
+	}
+	
+	@Override
+	public List<ProgramState> trans(ProgramState s) {
+		State state = s.getState();
+		if(getFormula().truthValue(state))
+			return Arrays.asList(new ProgramState(s, new Empty(), state));
+		else
+			return Collections.emptyList();
+	}
+	
+	@Override
+	public boolean isFinal(ProgramState s) {
+		return false;
 	}
 }

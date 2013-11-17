@@ -1,7 +1,14 @@
 package incr.golog.syntax;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import incr.golog.AbstractEntity;
+import incr.golog.ProgramState;
+import incr.subst.Substitution;
 import incr.subst.Substitutions;
+import incr.term.Term;
 import incr.term.Variable;
 
 public class Pi extends AbstractProgram {
@@ -57,5 +64,19 @@ public class Pi extends AbstractProgram {
 	@Override
 	public int hashCode() {
 		return getClass().hashCode() + getVar().hashCode() + getP1().hashCode();
+	}
+	
+	@Override
+	public List<ProgramState> trans(ProgramState s) {
+		List<ProgramState> r = new ArrayList<>();
+		for(Term t : s.getEnvironment().getAllIndividuals()) {
+			r.add(new ProgramState(s, getP1().substitute(new Substitutions(Arrays.asList(new Substitution(t, getVar())))), s.getState()));
+		}
+		return r;
+	}
+	
+	@Override
+	public boolean isFinal(ProgramState s) {
+		return false;
 	}
 }

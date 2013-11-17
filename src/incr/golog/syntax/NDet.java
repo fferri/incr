@@ -1,6 +1,10 @@
 package incr.golog.syntax;
 
+import java.util.Arrays;
+import java.util.List;
+
 import incr.golog.AbstractEntity;
+import incr.golog.ProgramState;
 import incr.subst.Substitutions;
 
 public class NDet extends AbstractProgram {
@@ -64,5 +68,18 @@ public class NDet extends AbstractProgram {
 	@Override
 	public int hashCode() {
 		return getClass().hashCode() + getP1().hashCode() + getP2().hashCode();
+	}
+	
+	@Override
+	public List<ProgramState> trans(ProgramState s) {
+		return Arrays.asList(
+			new ProgramState(s, getP1(), s.getState()),
+			new ProgramState(s, getP2(), s.getState())
+		);
+	}
+	
+	@Override
+	public boolean isFinal(ProgramState s) {
+		return false;
 	}
 }

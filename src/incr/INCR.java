@@ -30,7 +30,7 @@ public class INCR {
 		ProgramState ps0 = new ProgramState(parser.environment, parser.program, s);
 		
 		ProgramState ps = ps0;
-		ProgramState.SolutionIterator i = ps0.solutionIterator(parser.environment);
+		ProgramState.SolutionIterator i = ps0.solutionIterator();
 		int n = 0;
 		while(i.hasNext()) {
 			ps = i.next();

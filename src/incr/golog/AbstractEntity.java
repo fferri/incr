@@ -1,5 +1,12 @@
 package incr.golog;
 
+/**
+ * This abstract class is meant for representing programs
+ * and procedures
+ * 
+ * @author Federico Ferri <federico.ferri.it@gmail.com>
+ *
+ */
 public abstract class AbstractEntity {
 	protected String indent(int indentLevel) {
 		StringBuffer sb = new StringBuffer();

@@ -1,7 +1,16 @@
 package incr.golog.syntax;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import incr.Action;
+import incr.State;
 import incr.golog.AbstractEntity;
+import incr.golog.Environment;
+import incr.golog.Proc;
+import incr.golog.ProgramState;
 import incr.subst.Substitutions;
+import incr.subst.Unify;
 import incr.term.Functional;
 
 public class Atomic extends AbstractProgram {
@@ -44,5 +53,42 @@ public class Atomic extends AbstractProgram {
 	@Override
 	public int hashCode() {
 		return getClass().hashCode() + getTerm().hashCode();
+	}
+	
+	@Override
+	public List<ProgramState> trans(ProgramState s) {
+		if(s.getProgram() != this)
+			throw new IllegalArgumentException();
+		
+		Environment env = s.getEnvironment();
+		State state = s.getState();
+		Functional a = getTerm();
+		List<ProgramState> ret = new ArrayList<>();
+		for(Proc proc : env.getProcs(a)) {
+			proc = proc.ground(a);
+			ret.add(new ProgramState(s, proc.getBody(), state));
+		}
+		for(Action action : env.getActions(a)) {
+			try {
+				action = action.ground(Unify.unify(a, action.getHead()));
+			} catch(IllegalArgumentException ex) {
+				continue;
+			}
+			
+			if(!action.isGround()) {
+				System.err.println("WARNING: skipping execution of unground action " + action.getHead());
+				continue;
+			}
+			
+			// if possible, execute it:
+			if(action.isPossible(state))
+				ret.add(new ProgramState(s, new Empty(), action.apply(state)));
+		}
+		return ret;
+	}
+	
+	@Override
+	public boolean isFinal(ProgramState s) {
+		return false;
 	}
 }

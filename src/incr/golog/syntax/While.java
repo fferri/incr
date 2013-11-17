@@ -1,6 +1,11 @@
 package incr.golog.syntax;
 
+import java.util.Arrays;
+import java.util.List;
+
+import incr.State;
 import incr.golog.AbstractEntity;
+import incr.golog.ProgramState;
 import incr.subst.Substitutions;
 import incr.term.Term;
 
@@ -53,5 +58,21 @@ public class While extends AbstractProgram {
 	@Override
 	public int hashCode() {
 		return getClass().hashCode() + getCondition().hashCode() + getBody().hashCode();
+	}
+	
+	@Override
+	public List<ProgramState> trans(ProgramState s) {
+		State state = s.getState();
+		return Arrays.asList(
+			new ProgramState(s, getCondition().truthValue(state)
+					? new Sequence(getBody(), this)
+					: new Empty(),
+				state)
+		);
+	}
+	
+	@Override
+	public boolean isFinal(ProgramState s) {
+		return false;
 	}
 }

@@ -1,6 +1,9 @@
 package incr.golog.syntax;
 
+import java.util.List;
+
 import incr.golog.AbstractEntity;
+import incr.golog.ProgramState;
 import incr.subst.Substitutions;
 
 public final class Empty extends AbstractProgram {
@@ -31,5 +34,15 @@ public final class Empty extends AbstractProgram {
 	@Override
 	public int hashCode() {
 		return getClass().hashCode();
+	}
+	
+	@Override
+	public List<ProgramState> trans(ProgramState s) {
+		throw new UnsupportedOperationException("Cannot step an empty program");
+	}
+	
+	@Override
+	public boolean isFinal(ProgramState s) {
+		return true;
 	}
 }
