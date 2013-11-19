@@ -57,17 +57,15 @@ public interface GologParserConstants {
   /** RegularExpression Id. */
   int PRECONDITIONS = 28;
   /** RegularExpression Id. */
-  int ADD = 29;
+  int EFFECTS = 29;
   /** RegularExpression Id. */
-  int DEL = 30;
+  int ID = 30;
   /** RegularExpression Id. */
-  int ID = 31;
+  int NUMINT = 31;
   /** RegularExpression Id. */
-  int NUMINT = 32;
+  int NUMFLOAT = 32;
   /** RegularExpression Id. */
-  int NUMFLOAT = 33;
-  /** RegularExpression Id. */
-  int VAR = 34;
+  int VAR = 33;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -103,8 +101,7 @@ public interface GologParserConstants {
     "\"*\"",
     "\"action\"",
     "\"preconditions\"",
-    "\"add\"",
-    "\"del\"",
+    "\"effects\"",
     "<ID>",
     "<NUMINT>",
     "<NUMFLOAT>",

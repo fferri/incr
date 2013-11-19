@@ -2,14 +2,13 @@ package incr.golog;
 
 import incr.Action;
 import incr.State;
-import incr.formula.BinaryOp;
-import incr.formula.UnaryOp;
 import incr.golog.syntax.AbstractProgram;
 import incr.subst.Substitutions;
 import incr.subst.Unify;
 import incr.term.Functional;
 import incr.term.Term;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -29,7 +28,7 @@ public class Environment {
 	public Environment() {
 	}
 
-	public void addProc(Proc p) {
+	public void add(Proc p) {
 		procs.add(p);
 		procsBySignature.add(p.getHead().getSignature(), p);
 	}
@@ -46,7 +45,7 @@ public class Environment {
 			return Collections.emptySet();
 	}
 	
-	public void addAction(Action a) {
+	public void add(Action a) {
 		actions.add(a);
 		actionsBySignature.add(a.getHead().getSignature(), a);
 	}
@@ -109,6 +108,10 @@ public class Environment {
 	
 	public Set<Term> getAllIndividuals() {
 		return Collections.unmodifiableSet(individuals);
+	}
+	
+	public void setIndividuals(Term...terms) {
+		setIndividuals(Arrays.asList(terms));
 	}
 	
 	public void setIndividuals(Collection<Term> i) {

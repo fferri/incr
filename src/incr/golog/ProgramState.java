@@ -1,21 +1,12 @@
 package incr.golog;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import incr.Action;
 import incr.State;
 import incr.golog.syntax.*;
-import incr.subst.Substitution;
-import incr.subst.Substitutions;
-import incr.subst.Unify;
-import incr.term.Functional;
-import incr.term.Term;
 
 public class ProgramState {
 	private Environment env;

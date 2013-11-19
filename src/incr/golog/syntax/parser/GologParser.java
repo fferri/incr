@@ -36,11 +36,11 @@ public class GologParser implements GologParserConstants {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case PROC:
         proc = proc();
-                       environment.addProc(proc);
+                       environment.add(proc);
         break;
       case ACTION:
         action = action();
-                           environment.addAction(action);
+                           environment.add(action);
         break;
       default:
         jj_la1[1] = jj_gen;
@@ -67,8 +67,7 @@ public class GologParser implements GologParserConstants {
   final public Action action() throws ParseException {
         Functional head;
         Functional precond = Term.TRUE;
-        List<Term> add = Collections.emptyList();
-        List<Term> del = Collections.emptyList();
+        List<Term> effects = Collections.emptyList();
     jj_consume_token(ACTION);
     head = functionalOrAtom();
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -81,24 +80,15 @@ public class GologParser implements GologParserConstants {
       ;
     }
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case ADD:
-      jj_consume_token(ADD);
-      add = termList();
+    case EFFECTS:
+      jj_consume_token(EFFECTS);
+      effects = termList();
       break;
     default:
       jj_la1[4] = jj_gen;
       ;
     }
-    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case DEL:
-      jj_consume_token(DEL);
-      del = termList();
-      break;
-    default:
-      jj_la1[5] = jj_gen;
-      ;
-    }
-         {if (true) return new Action(head, precond, add, del);}
+         {if (true) return new Action(head, precond, effects);}
     throw new Error("Missing return statement in function");
   }
 
@@ -135,7 +125,7 @@ public class GologParser implements GologParserConstants {
       p = grouping();
       break;
     default:
-      jj_la1[6] = jj_gen;
+      jj_la1[5] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -148,7 +138,7 @@ public class GologParser implements GologParserConstants {
         ;
         break;
       default:
-        jj_la1[7] = jj_gen;
+        jj_la1[6] = jj_gen;
         break label_2;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -167,7 +157,7 @@ public class GologParser implements GologParserConstants {
                   p = new Star(p);
         break;
       default:
-        jj_la1[8] = jj_gen;
+        jj_la1[7] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -247,7 +237,7 @@ public class GologParser implements GologParserConstants {
         f = atom();
         break;
       default:
-        jj_la1[9] = jj_gen;
+        jj_la1[8] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -270,7 +260,7 @@ public class GologParser implements GologParserConstants {
       args = termList();
       break;
     default:
-      jj_la1[10] = jj_gen;
+      jj_la1[9] = jj_gen;
       ;
     }
     jj_consume_token(PAR_CL);
@@ -295,7 +285,7 @@ public class GologParser implements GologParserConstants {
       f = jj_consume_token(NUMFLOAT);
       break;
     default:
-      jj_la1[11] = jj_gen;
+      jj_la1[10] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -327,7 +317,7 @@ public class GologParser implements GologParserConstants {
         t = var();
         break;
       default:
-        jj_la1[12] = jj_gen;
+        jj_la1[11] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -349,7 +339,7 @@ public class GologParser implements GologParserConstants {
         ;
         break;
       default:
-        jj_la1[13] = jj_gen;
+        jj_la1[12] = jj_gen;
         break label_3;
       }
       jj_consume_token(COMMA);
@@ -377,7 +367,7 @@ public class GologParser implements GologParserConstants {
         ;
         break;
       default:
-        jj_la1[14] = jj_gen;
+        jj_la1[13] = jj_gen;
         break label_4;
       }
       jj_consume_token(OR);
@@ -398,7 +388,7 @@ public class GologParser implements GologParserConstants {
         ;
         break;
       default:
-        jj_la1[15] = jj_gen;
+        jj_la1[14] = jj_gen;
         break label_5;
       }
       jj_consume_token(AND);
@@ -428,7 +418,7 @@ public class GologParser implements GologParserConstants {
                                           {if (true) return t;}
       break;
     default:
-      jj_la1[16] = jj_gen;
+      jj_la1[15] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -449,6 +439,11 @@ public class GologParser implements GologParserConstants {
     finally { jj_save(1, xla); }
   }
 
+  private boolean jj_3_2() {
+    if (jj_3R_6()) return true;
+    return false;
+  }
+
   private boolean jj_3R_6() {
     if (jj_scan_token(ID)) return true;
     if (jj_scan_token(PAR_OP)) return true;
@@ -456,11 +451,6 @@ public class GologParser implements GologParserConstants {
   }
 
   private boolean jj_3_1() {
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
-  private boolean jj_3_2() {
     if (jj_3R_6()) return true;
     return false;
   }
@@ -476,7 +466,7 @@ public class GologParser implements GologParserConstants {
   private Token jj_scanpos, jj_lastpos;
   private int jj_la;
   private int jj_gen;
-  final private int[] jj_la1 = new int[17];
+  final private int[] jj_la1 = new int[16];
   static private int[] jj_la1_0;
   static private int[] jj_la1_1;
   static {
@@ -484,10 +474,10 @@ public class GologParser implements GologParserConstants {
       jj_la1_init_1();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x8040000,0x8040000,0x80a08840,0x10000000,0x20000000,0x40000000,0x80a08840,0x7000000,0x7000000,0x80000000,0x80000000,0x0,0x80000000,0x80000,0x200,0x100,0x80000440,};
+      jj_la1_0 = new int[] {0x8040000,0x8040000,0x40a08840,0x10000000,0x20000000,0x40a08840,0x7000000,0x7000000,0x40000000,0xc0000000,0x80000000,0xc0000000,0x80000,0x200,0x100,0x40000440,};
    }
    private static void jj_la1_init_1() {
-      jj_la1_1 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x7,0x3,0x7,0x0,0x0,0x0,0x0,};
+      jj_la1_1 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x3,0x1,0x3,0x0,0x0,0x0,0x0,};
    }
   final private JJCalls[] jj_2_rtns = new JJCalls[2];
   private boolean jj_rescan = false;
@@ -504,7 +494,7 @@ public class GologParser implements GologParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 17; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 16; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -519,7 +509,7 @@ public class GologParser implements GologParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 17; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 16; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -530,7 +520,7 @@ public class GologParser implements GologParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 17; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 16; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -541,7 +531,7 @@ public class GologParser implements GologParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 17; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 16; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -551,7 +541,7 @@ public class GologParser implements GologParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 17; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 16; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -561,7 +551,7 @@ public class GologParser implements GologParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 17; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 16; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -673,12 +663,12 @@ public class GologParser implements GologParserConstants {
   /** Generate ParseException. */
   public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[35];
+    boolean[] la1tokens = new boolean[34];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 17; i++) {
+    for (int i = 0; i < 16; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {
@@ -690,7 +680,7 @@ public class GologParser implements GologParserConstants {
         }
       }
     }
-    for (int i = 0; i < 35; i++) {
+    for (int i = 0; i < 34; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;

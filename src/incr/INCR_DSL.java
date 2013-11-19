@@ -6,72 +6,51 @@ package incr;
 
 import incr.golog.*;
 import incr.golog.syntax.AbstractProgram;
-import static incr.golog.DSL.*;
+import incr.term.Functional;
+import incr.term.Variable;
+import static incr.golog.builder.Golog.*;
 
 public class INCR_DSL {
 	static Environment env = new Environment();
 	
-	static State state = new State(
-		_("on", "b", "table"),
-		_("clear", "b"),
-		_("clear", "c"),
-		_("on", "c", "d"),
-		_("on", "d", "a"),
-		_("on", "a", "table"),
-		_("clear", "table")
-	);
+	// atoms:
+	static final Functional a = Atom("a"), b = Atom("b"),
+			c = Atom("c"), d = Atom("d"), table = Atom("table");
+	
+	// functional shorthands:
+	static Functional goal() {return Func("goal");}
+	static Functional move(Object obj, Object from, Object to) {return Func("move", obj, from, to);}
+	static Functional on(Object a, Object b) {return Func("on", a, b);}
+	static Functional clear(Object obj) {return Func("clear", obj);}
+	
+	// variable shorthands:
+	static Variable Obj = Var("Obj"), From = Var("From"), To = Var("To"), A = Var("A"), B = Var("B");
+	
+	static State state = new State(on(b, table), clear(b), clear(c),
+		on(c, d), on(d, a), on(a, table), clear(table));
 	
 	static {
-		env.addIndividual(_("a"));
-		env.addIndividual(_("b"));
-		env.addIndividual(_("c"));
-		env.addIndividual(_("d"));
-		env.addIndividual(_("table"));
+		env.setIndividuals(a, b, c, d, table);
 
-		env.addAction(ACTION(_("goal"),
-				AND(
-					_("clear", "a"),
-					_("on", "a", "b"),
-					_("on", "b", "c"),
-					_("on", "c", "d"),
-					_("on", "d", "table")
-				)
-			)
-		);
-		env.addAction(ACTION(_("move", "Obj", "From", "To"),
-				AND(
-					NOT(EQ("From", "To")),
-					_("on", "Obj", "From"),
-					_("clear", "Obj"),
-					_("clear", "To")
-				),
-				ADD(
-					_("on", "Obj", "To"),
-					_("clear", "From")
-				),
-				DEL(
-					_("on", "Obj", "From"),
-					_("clear", "To")
-				)
-			)
-		);
+		env.add(Action(goal(),
+				And(clear(a), on(a, b), on(b, c), on(c, d), on(d, table))));
+
+		env.add(Action(move(Obj, From, To),
+				And(NEq(From, To), on(Obj, From), clear(Obj), clear(To)),
+				on(Obj, To), clear(From), Not(on(Obj, From)), Not(clear(To))));
 	}
 	
 	// define the control program
-	static AbstractProgram program = SEQ(
+	static AbstractProgram program = Seq(
 		// nondeterministically unstack all blocks:
-		STAR(
-			PI("A", PI("B",
-					EXEC("move", "A", "B", "table")
-			))
-		),
+		Star(Pi(A, Pi(B, Exec(move(A, B, table))))),
 		// build the tower in the correct order:
-		EXEC("move", "c", "table", "d"),
-		EXEC("move", "b", "table", "c"),
-		EXEC("move", "a", "table", "b"),
+		Exec(move(c, table, d)),
+		Exec(move(b, table, c)),
+		Exec(move(a, table, b)),
 		// goal is an action consisting only of preconditions, saying
 		// that the goal must hold:
-		EXEC("goal")
+		Exec(goal())
 	);
 
 	public static void main(String[] args) throws Exception {

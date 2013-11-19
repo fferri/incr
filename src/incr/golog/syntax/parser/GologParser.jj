@@ -33,7 +33,7 @@ TOKEN: {
 |	<PROC:"proc"> | <COMMA:","> | <ENDPROC:"endProc">
 |	<PI:"pi"> | <DOT:".">
 |	<QUESTIONMARK:"?"> | <COLON:":"> | <PIPE:"|"> | <STAR:"*">
-|	<ACTION:"action"> | <PRECONDITIONS:"preconditions"> | <ADD:"add"> | <DEL:"del">
+|	<ACTION:"action"> | <PRECONDITIONS:"preconditions"> | <EFFECTS:"effects">
 |	<ID:["a"-"z"](["a"-"z","A"-"Z","0"-"9","_"])*>
 |	<NUMINT:("+"|"-")?("0"|["1"-"9"](["0"-"9"])*)>
 |	<NUMFLOAT:(<NUMINT>)?"."(["0"-"9"])+>
@@ -46,8 +46,8 @@ void parse():
 	Action action;
 }
 {
-	( proc=proc() {environment.addProc(proc);}
-	| action=action() {environment.addAction(action);}	)*
+	( proc=proc() {environment.add(proc);}
+	| action=action() {environment.add(action);}	)*
 	[ program=program() {} ]
 }
 
@@ -55,13 +55,12 @@ Action action():
 {
 	Functional head;
 	Functional precond = Term.TRUE;
-	List<Term> add = Collections.emptyList();
-	List<Term> del = Collections.emptyList();}{
+	List<Term> effects = Collections.emptyList();
+}{
 	<ACTION> head=functionalOrAtom()
 	[ <PRECONDITIONS> precond=boolExpr() ]
-	[ <ADD> add=termList() ]
-	[ <DEL> del=termList() ]
-	{return new Action(head, precond, add, del);}}
+	[ <EFFECTS> effects=termList() ]
+	{return new Action(head, precond, effects);}}
 
 Proc proc():
 {

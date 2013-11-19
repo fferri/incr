@@ -1,6 +1,7 @@
 package incr;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -25,40 +26,47 @@ public class Action {
 		this(head, preconditions, NO_TERMS);
 	}
 	
-	public Action(Functional head, Term preconditions, List<? extends Term> addList) {
-		this(head, preconditions, addList, NO_TERMS);
-	}
-	
-	public Action(Functional head, Term preconditions, List<? extends Term> addList, List<? extends Term> delList) {
+	private Action(Functional head, Term preconditions, List<? extends Term> addList, List<? extends Term> delList) {
 		if(head == null || preconditions == null || addList == null || delList == null)
 			throw new NullPointerException();
 		this.head = head;
 		this.preconditions = preconditions;
-		this.addList = new ArrayList<>(addList.size());
-		for(Term p : addList) {
-			validateAddDelTerm(p);
-			this.addList.add(p);
-		}
-		this.delList = new ArrayList<>(delList.size());
-		for(Term p : delList) {
-			validateAddDelTerm(p);
-			this.delList.add(p);
-		}
+		this.addList = new ArrayList<>(addList);
+		this.delList = new ArrayList<>(delList);
 	}
 	
-	protected void validateAddDelTerm(Term t) {
-		if(t == null)
+	public Action(Functional head, Term preconditions, Term...addDelList) {
+		this(head, preconditions, Arrays.asList(addDelList));
+	}
+	
+	public Action(Functional head, Term preconditions, List<? extends Term> addDelList) {
+		if(head == null || preconditions == null || addDelList == null)
 			throw new NullPointerException();
-		if(t instanceof Variable)
-			return;
-		if(t instanceof Functional) {
-			Functional f = (Functional)t;
-			if(f.getOrder() > 1)
-				throw new IllegalArgumentException("only atoms or first order terms allowed in add/del list");
-			if(f instanceof UnaryOp || f instanceof BinaryOp)
-				throw new IllegalArgumentException("logic operators not allowed in add/del list");
-		} else {
-			throw new IllegalArgumentException("unsupported term in add/del list: " + t.getClass().getSimpleName());
+		this.head = head;
+		this.preconditions = preconditions;
+		this.addList = new ArrayList<>();
+		this.delList = new ArrayList<>();
+		for(Term p : addDelList) {
+			// check negation first:
+			boolean neg = false;
+			while(p instanceof Functional && ((Functional)p).getSignature().equals("not/1")) {
+				p = ((Functional)p).getArg(0);
+				neg = !neg;
+			}
+
+			if(p instanceof Variable)
+				throw new IllegalArgumentException();
+			if(p instanceof Functional) {
+				Functional f = (Functional)p;
+				if(f.getOrder() > 1)
+					throw new IllegalArgumentException("only atoms or first order terms allowed in add/del list");
+				if(f instanceof UnaryOp || f instanceof BinaryOp)
+					throw new IllegalArgumentException("logic operators not allowed in add/del list");
+			} else {
+				throw new IllegalArgumentException("unsupported term in add/del list: " + p.getClass().getSimpleName());
+			}
+			if(neg) this.delList.add(p);
+			else this.addList.add(p);
 		}
 	}
 	
