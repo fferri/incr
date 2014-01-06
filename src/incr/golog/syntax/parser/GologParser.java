@@ -8,6 +8,7 @@ import incr.*;
 import incr.formula.*;
 import incr.golog.*;
 import incr.golog.syntax.*;
+import incr.strips.*;
 import incr.term.*;
 
 @SuppressWarnings("unused")
@@ -21,7 +22,7 @@ public class GologParser implements GologParserConstants {
 
   final public void parse() throws ParseException {
         Proc proc;
-        Action action;
+        STRIPSAction action;
     label_1:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -64,7 +65,7 @@ public class GologParser implements GologParserConstants {
     }
   }
 
-  final public Action action() throws ParseException {
+  final public STRIPSAction action() throws ParseException {
         Functional head;
         Functional precond = Term.TRUE;
         List<Term> effects = Collections.emptyList();
@@ -88,7 +89,7 @@ public class GologParser implements GologParserConstants {
       jj_la1[4] = jj_gen;
       ;
     }
-         {if (true) return new Action(head, precond, effects);}
+         {if (true) return new STRIPSAction(head, precond, effects);}
     throw new Error("Missing return statement in function");
   }
 
@@ -253,6 +254,7 @@ public class GologParser implements GologParserConstants {
     f = jj_consume_token(ID);
     jj_consume_token(PAR_OP);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case NOT:
     case ID:
     case NUMINT:
     case NUMFLOAT:
@@ -302,6 +304,7 @@ public class GologParser implements GologParserConstants {
 
   final public Term functionalOrNumOrVar() throws ParseException {
         Term t;
+        boolean neg = false;
     if (jj_2_2(2)) {
       t = functional();
     } else {
@@ -316,13 +319,18 @@ public class GologParser implements GologParserConstants {
       case VAR:
         t = var();
         break;
+      case NOT:
+        jj_consume_token(NOT);
+                 neg=!neg;
+        t = functionalOrNumOrVar();
+        break;
       default:
         jj_la1[11] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
     }
-         {if (true) return t;}
+         {if (true) return neg ? new Not(t) : t;}
     throw new Error("Missing return statement in function");
   }
 
@@ -439,14 +447,14 @@ public class GologParser implements GologParserConstants {
     finally { jj_save(1, xla); }
   }
 
-  private boolean jj_3_2() {
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
   private boolean jj_3R_6() {
     if (jj_scan_token(ID)) return true;
     if (jj_scan_token(PAR_OP)) return true;
+    return false;
+  }
+
+  private boolean jj_3_2() {
+    if (jj_3R_6()) return true;
     return false;
   }
 
@@ -474,7 +482,7 @@ public class GologParser implements GologParserConstants {
       jj_la1_init_1();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x8040000,0x8040000,0x40a08840,0x10000000,0x20000000,0x40a08840,0x7000000,0x7000000,0x40000000,0xc0000000,0x80000000,0xc0000000,0x80000,0x200,0x100,0x40000440,};
+      jj_la1_0 = new int[] {0x8040000,0x8040000,0x40a08840,0x10000000,0x20000000,0x40a08840,0x7000000,0x7000000,0x40000000,0xc0000400,0x80000000,0xc0000400,0x80000,0x200,0x100,0x40000440,};
    }
    private static void jj_la1_init_1() {
       jj_la1_1 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x3,0x1,0x3,0x0,0x0,0x0,0x0,};

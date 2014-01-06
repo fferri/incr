@@ -80,6 +80,6 @@ public class NDet extends AbstractProgram {
 	
 	@Override
 	public boolean isFinal(ProgramState s) {
-		return false;
+		return p1.isFinal(s) || p2.isFinal(s);
 	}
 }

@@ -6,6 +6,7 @@ import incr.*;
 import incr.formula.*;
 import incr.golog.*;
 import incr.golog.syntax.*;
+import incr.strips.*;
 import incr.term.*;
 
 /** Token Manager. */

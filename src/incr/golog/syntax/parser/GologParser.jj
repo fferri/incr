@@ -12,6 +12,7 @@ import incr.*;
 import incr.formula.*;
 import incr.golog.*;
 import incr.golog.syntax.*;
+import incr.strips.*;
 import incr.term.*;
 
 @SuppressWarnings("unused")
@@ -43,7 +44,7 @@ TOKEN: {
 void parse():
 {
 	Proc proc;
-	Action action;
+	STRIPSAction action;
 }
 {
 	( proc=proc() {environment.add(proc);}
@@ -51,7 +52,7 @@ void parse():
 	[ program=program() {} ]
 }
 
-Action action():
+STRIPSAction action():
 {
 	Functional head;
 	Functional precond = Term.TRUE;
@@ -60,7 +61,7 @@ Action action():
 	<ACTION> head=functionalOrAtom()
 	[ <PRECONDITIONS> precond=boolExpr() ]
 	[ <EFFECTS> effects=termList() ]
-	{return new Action(head, precond, effects);}}
+	{return new STRIPSAction(head, precond, effects);}}
 
 Proc proc():
 {
@@ -169,9 +170,16 @@ Variable var():
 Term functionalOrNumOrVar():
 {
 	Term t;
+	boolean neg = false;
 }
 {
-	( LOOKAHEAD(2) t=functional() | t=atom() | t=num() | t=var() )	{return t;}
+	( LOOKAHEAD(2)
+	t=functional()
+	| t=atom()
+	| t=num()
+	| t=var()
+	| <NOT> {neg=!neg;} t=functionalOrNumOrVar()
+	)	{return neg ? new Not(t) : t;}
 }
 
 List<Term> termList():

@@ -8,6 +8,7 @@ import java.io.FileInputStream;
 
 import incr.golog.*;
 import incr.golog.syntax.parser.GologParser;
+import incr.strips.*;
 import incr.term.Functional;
 
 public class INCR {
@@ -15,14 +16,16 @@ public class INCR {
 		GologParser parser = new GologParser(new FileInputStream("programs/blocksworld.txt"));
 		parser.parse();
 		
-		for(Action a : parser.environment.getActions()) {
+		for(STRIPSAction a : parser.environment.getActions()) {
 			System.out.println("ACTION " + a);
 		}
 		for(Proc p : parser.environment.getProcs()) {
 			System.out.println("PROC " + p.getHead() + "\n" + p.getBody().toString(1));
 		}
 		
-		State s = parser.environment.getActions(new Functional("init")).iterator().next().apply(new State());
+		STRIPSState s = new STRIPSState();
+		STRIPSAction init = parser.environment.getActions(new Functional("init")).iterator().next();
+		s = init.apply(s);
 		System.out.println("Initial state: " + s);
 
 		System.out.println("Program:\n" + parser.program.toString(1));

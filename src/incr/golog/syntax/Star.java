@@ -62,6 +62,6 @@ public class Star extends AbstractProgram {
 	
 	@Override
 	public boolean isFinal(ProgramState s) {
-		return false;
+		return true;
 	}
 }

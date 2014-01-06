@@ -10,7 +10,6 @@ import incr.golog.Environment;
 import incr.golog.Proc;
 import incr.golog.ProgramState;
 import incr.subst.Substitutions;
-import incr.subst.Unify;
 import incr.term.Functional;
 
 public class Atomic extends AbstractProgram {
@@ -69,20 +68,9 @@ public class Atomic extends AbstractProgram {
 			ret.add(new ProgramState(s, proc.getBody(), state));
 		}
 		for(Action action : env.getActions(a)) {
-			try {
-				action = action.ground(Unify.unify(a, action.getHead()));
-			} catch(IllegalArgumentException ex) {
-				continue;
-			}
-			
-			if(!action.isGround()) {
-				System.err.println("WARNING: skipping execution of unground action " + action.getHead());
-				continue;
-			}
-			
-			// if possible, execute it:
-			if(action.isPossible(state))
-				ret.add(new ProgramState(s, new Empty(), action.apply(state)));
+			State newState = action.apply(a, state);
+			if(newState != null) // action was possible
+				ret.add(new ProgramState(s, new Empty(), newState));
 		}
 		return ret;
 	}

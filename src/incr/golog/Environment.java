@@ -1,10 +1,7 @@
 package incr.golog;
 
-import incr.Action;
-import incr.State;
 import incr.golog.syntax.AbstractProgram;
-import incr.subst.Substitutions;
-import incr.subst.Unify;
+import incr.strips.STRIPSAction;
 import incr.term.Functional;
 import incr.term.Term;
 
@@ -20,8 +17,8 @@ public class Environment {
 	private Set<Proc> procs = new HashSet<Proc>();
 	private MultiHashMap<String, Proc> procsBySignature = new MultiHashMap<>();
 	
-	private Set<Action> actions = new HashSet<Action>();
-	private MultiHashMap<String, Action> actionsBySignature = new MultiHashMap<>();
+	private Set<STRIPSAction> actions = new HashSet<STRIPSAction>();
+	private MultiHashMap<String, STRIPSAction> actionsBySignature = new MultiHashMap<>();
 	
 	private AbstractProgram program = null;
 
@@ -45,21 +42,22 @@ public class Environment {
 			return Collections.emptySet();
 	}
 	
-	public void add(Action a) {
+	public void add(STRIPSAction a) {
 		actions.add(a);
 		actionsBySignature.add(a.getHead().getSignature(), a);
 	}
 	
-	public Set<Action> getActions() {
+	public Set<STRIPSAction> getActions() {
 		return Collections.unmodifiableSet(actions);
 	}
 	
-	public Set<Action> getActions(Functional head) {
+	public Set<STRIPSAction> getActions(Functional head) {
 		String s = head.getSignature();
-		if(actionsBySignature.containsKey(s))
+		if(actionsBySignature.containsKey(s)) {
 			return actionsBySignature.get(s);
-		else
+		} else {
 			return Collections.emptySet();
+		}
 	}
 	
 	public void setProgram(AbstractProgram p) {
@@ -123,7 +121,7 @@ public class Environment {
 		individuals.add(i);
 	}
 	
-	public State executeAction(Functional head, State s) {
+	/*public State executeAction(Functional head, State s) {
 		Set<Action> actions = getActions(head);
 		if(actions.isEmpty()) return null;
 		if(actions.size() > 1)
@@ -132,5 +130,5 @@ public class Environment {
 		Substitutions subs = Unify.unify(action.getHead(), head);
 		Action groundAction = action.ground(subs);
 		return groundAction.apply(s);
-	}
+	}*/
 }

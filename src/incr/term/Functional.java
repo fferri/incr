@@ -105,7 +105,7 @@ public class Functional extends Term {
 		if(getSignature().equals("true/0")) return true;
 		if(getSignature().equals("false/0")) return true;
 		if(getSignature().equals("equals/2")) return getArg(0).equals(getArg(1));
-		return s.contains(this);
+		return s.holds(this);
 	}
 	
 	@Override

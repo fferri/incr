@@ -4,91 +4,150 @@ import static org.junit.Assert.*;
 
 import java.util.Arrays;
 
-import incr.formula.And;
-import incr.formula.Or;
-import incr.golog.syntax.AbstractProgram;
-import incr.golog.syntax.Atomic;
-import incr.golog.syntax.Empty;
-import incr.golog.syntax.If;
-import incr.golog.syntax.NDet;
-import incr.golog.syntax.Pi;
-import incr.subst.Substitution;
-import incr.subst.Substitutions;
-import incr.subst.Unify;
-import incr.term.Functional;
-import incr.term.Term;
-import incr.term.Variable;
+import incr.golog.Environment;
+import incr.golog.ProgramState;
+import incr.golog.syntax.*;
+import incr.strips.STRIPSState;
+import incr.subst.*;
+import incr.term.*;
+import static incr.golog.builder.Golog.*;
 
 public class Tests {
+	/*
+	 * Test utilities
+	 */
+
+	private void assertNoException(Runnable r) {
+		try {
+			r.run();
+		} catch(Exception e) {
+			fail("assertSucceeds: failed");
+		}
+	}
+
+	private void assertException(Runnable r) {
+		assertException(r, null);
+	}
+	
+	private void assertException(Runnable r, Class<?> exceptionType) {
+		try {
+			r.run();
+			fail("assertFails: testcase didn't fail");
+		} catch(Exception e) {
+			if(exceptionType != null && !e.getClass().equals(exceptionType))
+				fail("assertFails: failed, but with a different exception: " + e);
+		}
+	}
+	
+	private void testUnify(Term a, Term b) {
+		Substitutions s = Unify.unify(a, b);
+		assertNotNull(s);
+		//System.out.printf("'%s' unifies with '%s' using subst %s\n", a, b, s);
+	}
+
+	/*
+	 * some objects used in tests:
+	 */
+	private static final Functional a = Atom("a"), b = Atom("b"), c = Atom("c");
+
+	private static final Variable X = Var("X"), Y = Var("Y"), Z = Var("Z");
+	
+	private static Functional f(Object...args) {return Func("f", args);}
+	private static Functional g(Object...args) {return Func("g", args);}
+	
+	private static final Environment env = new Environment(); static {
+		env.setIndividuals(a, b, c);
+	}
+	
+	private static final State state = new STRIPSState(f(a), f(b), g(c));
+
+	@org.junit.Test
+	public void testUtilities() {
+		assertNoException(new Runnable() {
+			public void run() {}
+		});
+		assertException(new Runnable() {
+			public void run() {throw new RuntimeException();}
+		});
+		assertException(new Runnable() {
+			public void run() {throw new IllegalArgumentException();}
+		}, IllegalArgumentException.class);
+	}
+
 	@org.junit.Test
 	public void testVariableIdentifiers() throws Exception {
-		try {
-			new Variable("x");
-			fail();
-		} catch(IllegalArgumentException e) {
-		}
-		try {
-			new Variable("X");
-		} catch(IllegalArgumentException e) {
-			fail();
-		}
+		assertException(new Runnable() {
+			public void run() {Var("x");}
+		}, IllegalArgumentException.class);
+		assertNoException(new Runnable() {
+			public void run() {Var("X");}
+		});
 	}
 	
 	@org.junit.Test
 	public void testConstantIdentifiers() throws Exception {
-		try {
-			new Functional("X");
-			fail();
-		} catch(IllegalArgumentException e) {
-		}
-		try {
-			new Functional("x");
-		} catch(IllegalArgumentException e) {
-			fail();
-		}
+		assertException(new Runnable() {
+			public void run() {Atom("X");}
+		}, IllegalArgumentException.class);
+		assertNoException(new Runnable() {
+			public void run() {Atom("x");}
+		});
 	}
 	
 	@org.junit.Test
 	public void testGroundChecking() throws Exception {
-		Variable x = new Variable("X");
-		assertFalse(x.isGround());
-		
-		Functional y = new Functional("y");
-		assertTrue(y.isGround());
-		
-		Term t = new And(x, y);
-		assertFalse(t.isGround());
+		assertFalse(Var("X").isGround());
+		assertTrue(Func("y", "a").isGround());
+		assertFalse(Func("y", "X").isGround());
+		assertFalse(And(Atom("x"), Var("Y")).isGround());
+		assertTrue(And(Atom("x"), Atom("y")).isGround());
 	}
 	
 	@org.junit.Test
 	public void testUnify() throws Exception {
-		Functional a = new Functional("a"), b = new Functional("b"),
-				c = new Functional("c"), d = new Functional("d");
-		Variable x = new Variable("X"), y = new Variable("Y");
-		testUnify(new And(a, x), new And(a, b));
-		testUnify(new And(a, x), y);
-		testUnify(new And(a, new Or(b, x)), new And(y, new Or(b, c)));
-	}
-	
-	private void testUnify(Term a, Term b) {
-		System.out.println("a=" + a);
-		System.out.println("b=" + b);
-		Substitutions s = Unify.unify(a, b);
-		System.out.println("unify=" + s);
+		Functional a = Atom("a"), b = Atom("b"), c = Atom("c");
+		Variable X = Var("X"), Y = Var("Y");
+		testUnify(And(a, X), And(a, b));
+		testUnify(And(a, X), Y);
+		testUnify(And(a, Or(b, X)), And(Y, Or(b, c)));
 	}
 	
 	@org.junit.Test
 	public void testSubstitution() throws Exception {
-		Variable x = new Variable("X");
-		Functional y = new Functional("y");
-		//Variable z = new Variable("Z");
-		Pi pi = new Pi(x, new Atomic(new Functional("a", Arrays.asList((Term)x))));
-		Atomic b = new Atomic(new Functional("b"));
-		AbstractProgram p1 = new NDet(b, new If(new And(x, y), pi, new Empty()));
-		AbstractProgram p2 = new NDet(b, new If(new And(y, y), pi, new Empty()));
-		Substitution s = new Substitution(y, x);
+		Substitution s = new Substitution(c, X);
 		Substitutions ss = new Substitutions(Arrays.asList(s));
-		p1 = p1.substitute(ss);
-		assertTrue(p1.equals(p2));
+
+		assertFalse(
+			Pi(X, Exec(f(X))).substitute(ss)
+			.equals(
+				Pi(X, Exec(f(c)))
+			)
+		);
+		
+		assertTrue(
+			NDet(Exec(f(b)), Exec(f(X))).substitute(ss)
+			.equals(
+				NDet(Exec(f(b)), Exec(f(c)))
+			)
+		);
+	}
+	
+	@org.junit.Test
+	public void testSemanticsIf() {
+		AbstractProgram p = If(f(a), Exec(a), Exec(b));
+		ProgramState ps = new ProgramState(env, p, state);
+		ps = p.trans(ps).get(0);
+		assertEquals(ps.getProgram(), Exec(a));
+	}
+	
+	@org.junit.Test
+	public void testSemanticsSeq() {
+		AbstractProgram p = Seq(If(f(a), Exec(a), Exec(b)), Exec(c));
+		ProgramState ps = new ProgramState(env, p, state);
+		ps = p.trans(ps).get(0);
+		p = ps.getProgram();
+		ps = p.trans(ps).get(0);
+		p = ps.getProgram();
+		System.out.println(""+p);
 	}
 }

@@ -1,9 +1,9 @@
 package incr.golog.builder;
 
-import incr.*;
 import incr.golog.*;
 import incr.golog.syntax.*;
 import incr.formula.*;
+import incr.strips.STRIPSAction;
 import incr.term.*;
 
 public class Golog {
@@ -97,7 +97,7 @@ public class Golog {
 		return new Proc(head, body);
 	}
 	
-	public static Action Action(Object head, Object precond, Object...addDelTerms) {
-		return new Action((Functional)Term(head), Term(precond), Terms(addDelTerms));
+	public static STRIPSAction STRIPSAction(Object head, Object precond, Object...addDelTerms) {
+		return new STRIPSAction((Functional)Term(head), Term(precond), Terms(addDelTerms));
 	}
 }

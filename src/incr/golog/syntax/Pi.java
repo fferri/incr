@@ -70,13 +70,19 @@ public class Pi extends AbstractProgram {
 	public List<ProgramState> trans(ProgramState s) {
 		List<ProgramState> r = new ArrayList<>();
 		for(Term t : s.getEnvironment().getAllIndividuals()) {
-			r.add(new ProgramState(s, getP1().substitute(new Substitutions(Arrays.asList(new Substitution(t, getVar())))), s.getState()));
+			Substitutions subs = new Substitutions(Arrays.asList(new Substitution(t, getVar())));
+			r.add(new ProgramState(s, getP1().substitute(subs), s.getState()));
 		}
 		return r;
 	}
 	
 	@Override
 	public boolean isFinal(ProgramState s) {
+		for(Term t : s.getEnvironment().getAllIndividuals()) {
+			Substitutions subs = new Substitutions(Arrays.asList(new Substitution(t, getVar())));
+			if(getP1().substitute(subs).isFinal(s))
+				return true;
+		}
 		return false;
 	}
 }

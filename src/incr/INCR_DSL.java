@@ -5,9 +5,9 @@
 package incr;
 
 import incr.golog.*;
-import incr.golog.syntax.AbstractProgram;
-import incr.term.Functional;
-import incr.term.Variable;
+import incr.golog.syntax.*;
+import incr.strips.*;
+import incr.term.*;
 import static incr.golog.builder.Golog.*;
 
 public class INCR_DSL {
@@ -26,16 +26,16 @@ public class INCR_DSL {
 	// variable shorthands:
 	static Variable Obj = Var("Obj"), From = Var("From"), To = Var("To"), A = Var("A"), B = Var("B");
 	
-	static State state = new State(on(b, table), clear(b), clear(c),
+	static State state = new STRIPSState(on(b, table), clear(b), clear(c),
 		on(c, d), on(d, a), on(a, table), clear(table));
 	
 	static {
 		env.setIndividuals(a, b, c, d, table);
 
-		env.add(Action(goal(),
+		env.add(STRIPSAction(goal(),
 				And(clear(a), on(a, b), on(b, c), on(c, d), on(d, table))));
 
-		env.add(Action(move(Obj, From, To),
+		env.add(STRIPSAction(move(Obj, From, To),
 				And(NEq(From, To), on(Obj, From), clear(Obj), clear(To)),
 				on(Obj, To), clear(From), Not(on(Obj, From)), Not(clear(To))));
 	}

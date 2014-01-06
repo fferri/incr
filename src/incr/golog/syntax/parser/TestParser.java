@@ -1,8 +1,8 @@
 package incr.golog.syntax.parser;
 
-import incr.Action;
 import incr.golog.*;
 import incr.golog.syntax.*;
+import incr.strips.STRIPSAction;
 
 import java.awt.*;
 import java.awt.geom.*;
@@ -19,11 +19,11 @@ public class TestParser {
 	public static void main(String[] args) throws IOException, ParseException {
 		GologParser parser = new GologParser(new FileInputStream("programs/blocksworld.txt"));
 		parser.parse();
-		Set<Action> actions = parser.environment.getActions();
+		Set<STRIPSAction> actions = parser.environment.getActions();
 		Set<Proc> procs = parser.environment.getProcs();
 		
 		System.out.println("PARSING RESULT:\n");
-		{int i=0; for(Action a : actions) {
+		{int i=0; for(STRIPSAction a : actions) {
 			System.out.println("ACTION #" + ++i + ":\n" + a);
 		}}
 		{int i=0; for(Proc p : procs) {
