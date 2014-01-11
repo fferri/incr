@@ -1,6 +1,5 @@
 package incr;
 
-import incr.subst.Unify;
 import incr.term.Functional;
 
 public abstract class Action<STATE extends State> {
@@ -14,10 +13,6 @@ public abstract class Action<STATE extends State> {
 	
 	public Functional getHead() {
 		return head;
-	}
-	
-	public boolean matches(Functional term) {
-		return Unify.unify(head, term) != null;
 	}
 	
 	/**
@@ -40,6 +35,14 @@ public abstract class Action<STATE extends State> {
 	 */
 	public abstract STATE apply(Functional term, STATE state);
 	
+	/**
+	 * Shorthand to {@link #apply(Functional, STATE)} which applies only
+	 * if this action is ground.
+	 * 
+	 * @param state The state to execute this action in
+	 * @return The resulting state
+	 * @see #apply(Functional, STATE)
+	 */
 	public STATE apply(STATE state) {
 		if(isGround())
 			return apply(getHead(), state);
